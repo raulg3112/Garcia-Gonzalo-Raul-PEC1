@@ -13,12 +13,46 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r libraries, include=FALSE}
+library(jsonlite)
+library(SummarizedExperiment)
+```
+
+```{r input, include=FALSE}
+json_data <- fromJSON("data/ST000001_AN000001.json")
+```
+
 # Descripció de la PAC
 
 1. Seleccionar i descarregar un dataset de *metabolòmica*, que es pot obtenir de [metabolomicsWorkbench](https://www.metabolomicsworkbench.or/) o d'[aquest repositori](htpps://github.com/nutrimetabolomics/metaboData) de GitHub.
 
+Dataset escollit: [*FATb Induction Experiment FatBIE*](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001)
 
 2. Crear un objecte de classe `SummarizedExperiment` que contingui les dades i les metadades (informació sobre el dataset, les seves files i columnes). La classe `SummarizedExperiment` és una extensió d'`ExpessionSet`, utilitzada per moltes aplicacionsi bases de dades (com és el cas de metabolomicsWorkbench). Quines són les seves principals diferències amb la classe `ExpressionSet`?
+
+```{r}
+# Implementació de les dades de tota la información del fitxer JSON.
+dades <- json_data$MS_METABOLITE_DATA$Data
+
+# Transformació de la informació de totes les columnes a número emprant la funció `as.numeric()` Evitem la primera columna degut a que conté la informació dels metabolits.
+dades[ , -1] <- lapply(dades[ , -1], as.numeric)
+
+# Es converteix la información en matriu amb `as.matrix()`. Aquesta matriu es pot nombrar com matriu d'intensitat.
+matriu_intensitat <- as.matrix(dades[ , -1])
+
+# S'afegeixen el nom dels metabolits a cada fila i els noms de cada columna.
+rownames(matriu_intensitat) <- dades[ , 1]
+colnames(matriu_intensitat) <- colnames(dades[ , -1])
+
+# Es genera un dataframe amb la informació per `colData`. 
+col_data <- DataFrame(json_data$SUBJECT_SAMPLE_FACTORS)
+
+# Generació de l'objecte de classe `SummarizedExperiment`.
+se <- SummarizedExperiment(assays = list(intensity = matriu_intensitat), colData = col_data)
+
+# Paral·lelament, es generen les metadades de l'objecte. 
+metadata(se) <- list(Study = json_data$STUDY, Project = json_data$PROJECT, Subject = json_data$SUBJECT, Collection = json_data$COLLECTION, Treatment = json_data$TREATMENT, SamplePrep = json_data$SAMPLEPREP, Cromatography = json_data$CHROMATOGRAPHY, Analysis = json_data$ANALYSIS, MS = json_data$MS)
+```
 
 3. Portar a terme una anàlisi exploratòria que proporcioni una visió general del dataset en la línia del que s'ha vist en les activitats d'aquest repte. 
 
