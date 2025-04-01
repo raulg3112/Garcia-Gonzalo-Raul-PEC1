@@ -13,7 +13,32 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Descripció de la PAC
+
+1. Seleccionar i descarregar un dataset de *metabolòmica*, que es pot obtenir de [metabolomicsWorkbench](https://www.metabolomicsworkbench.or/) o d'[aquest repositori](htpps://github.com/nutrimetabolomics/metaboData) de GitHub.
 
 
+2. Crear un objecte de classe `SummarizedExperiment` que contingui les dades i les metadades (informació sobre el dataset, les seves files i columnes). La classe `SummarizedExperiment` és una extensió d'`ExpessionSet`, utilitzada per moltes aplicacionsi bases de dades (com és el cas de metabolomicsWorkbench). Quines són les seves principals diferències amb la classe `ExpressionSet`?
 
+3. Portar a terme una anàlisi exploratòria que proporcioni una visió general del dataset en la línia del que s'ha vist en les activitats d'aquest repte. 
+
+4. Elaborar un informe que descrigui el procés que s'ha utilitzat, incloent-hi la justificació de la selecció del dataset, la seva incorporació al `SummarizedExperiment`, l'anàlisi exploratòria de les dades i la interpretació dels resultats des del punt de vista biològic. L'extensió màxima d'aquest informe (sense tenir en compte els Annexos) ha de ser de **10 pàgines**), en format PDF.
+
+5. Crear un respositori GitHub que contingui: 
+
+* l'informe
+
+* l'objecte de classe `SummarizedExperiment` que contingui les dades i les metadades en format binari (.Rda)
+
+* el codi R per a l'exploració de les dades degudament comentat (el control de versions del mateix s'ha de realitzar amb Git)
+
+* dades en format text
+
+* les metadades acompanyados d'una breu descripció en un arxiu markdown
+
+El nom de repositori ha de ser 'Cognom1-Cognom2-Nom-PEC1'. La direcció (*URL*) del repositori haurà d'estar inclosa en l'informe de manera clara. Teniu en compte que a través de CANVAS deveu lliurar únicament l'informe. 
+
+# Recursos
+
+Els recursos per dur a terme la PEC són els que s'han proporcionat en les diferents activitats del primer repte. A més, haureu de familiaritzar-vos amb la classe `SummarizedExperiment`. Per això podeu utilizar [aquest tutorial](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html) de Bioconductor. 
 
