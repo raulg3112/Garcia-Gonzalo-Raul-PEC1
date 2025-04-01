@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(jsonlite)
 library(metabolomicsWorkbenchR)
 library(SummarizedExperiment)
+library(ggplot2)
 ```
 
 ```{r input, include=FALSE}
@@ -25,33 +26,9 @@ json_data <- fromJSON("data/ST000001_AN000001.json")
 
 # Descripció de la PAC
 
-1. Seleccionar i descarregar un dataset de *metabolòmica*, que es pot obtenir de [metabolomicsWorkbench](https://www.metabolomicsworkbench.or/) o d'[aquest repositori](htpps://github.com/nutrimetabolomics/metaboData) de GitHub.
-
-Dataset escollit: [*FATb Induction Experiment FatBIE*](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001). DOI: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B)
-
-2. Crear un objecte de classe `SummarizedExperiment` que contingui les dades i les metadades (informació sobre el dataset, les seves files i columnes). La classe `SummarizedExperiment` és una extensió d'`ExpessionSet`, utilitzada per moltes aplicacionsi bases de dades (com és el cas de metabolomicsWorkbench). Quines són les seves principals diferències amb la classe `ExpressionSet`?
-
-```{r}
-se <- do_query(context = "study", input_item = "study_id", input_value = "ST000001", output_item = "SummarizedExperiment")
-assayNames(se) <- "Metabolite expression"
-```
+2. Quines són les seves principals diferències amb la classe `ExpressionSet`?
 
 3. Portar a terme una anàlisi exploratòria que proporcioni una visió general del dataset en la línia del que s'ha vist en les activitats d'aquest repte.
-
-```{r}
-se
-```
-
-
-
-
-
-
-
-
-
-
-
 
 4. Elaborar un informe que descrigui el procés que s'ha utilitzat, incloent-hi la justificació de la selecció del dataset, la seva incorporació al `SummarizedExperiment`, l'anàlisi exploratòria de les dades i la interpretació dels resultats des del punt de vista biològic. L'extensió màxima d'aquest informe (sense tenir en compte els Annexos) ha de ser de **10 pàgines**), en format PDF.
 
@@ -87,11 +64,11 @@ Els recursos per dur a terme la PEC són els que s'han proporcionat en les difer
 
 # MÈTODES
 
-- FITXER (tipus de dades) I ENLLAÇ (font d'origen)
+S'ha escollit emprar les dades de l'estudi anomenat *Fatb Induction Experiment (FatBIE)*, que es pot trobar al següent [enllaç](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001). A la vegada, el DOI de l'estudi és: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B).
 
-- METODOLOGIA
+SUMMARIZEDEXPERIMENT vs EXPRESSIONSET.
 
-- EINES ESTADÍSTIQUES I BIOINFORMÀTIQUES UTILITZADES
+Les llibreries emprades per poder generar `SummarizedExperiment` i l'anàlisi exploratori han sigut `jsonlite`, `metabolomicsWorkbenchR`,  `SummarizedExperiment` i `ggplot2`, junt amb funcions bàsiques de R.
 
 - PROCEDIMENT GENERAL D'ANÀLISI
 
@@ -99,15 +76,56 @@ Els recursos per dur a terme la PEC són els que s'han proporcionat en les difer
 
 # RESULTATS
 
-- CREACIÓ `SUMMARIZEDEXPERIMENT`
+D'entre les diferents opcions existents per poder generar l'objecte `SummarizedExperiment`, s'ha decantat per l'ús de la llibreria `metabolomicsWorkbenchR`, que permet implementar en R les dades i metadades dels estudis de forma directe, emprant una funció junt amb certes condicions. Amb `do_query()` i les condicions `context = "study"`, `input_item = "study_id"` i `input_value = "ST000001"`, se li marca al programa l'estudi concret al que es vol adreçar, i emprant per últim `output_item = "SummarizedExperiment"` s'aconsegueix obtenir l'objecte de classe `SummarizedExperiment. A continuació es pot veure un resum de la informació que conté:
+
+```{r}
+fatBIE <- do_query(context = "study", input_item = "study_id", input_value = "ST000001", output_item = "SummarizedExperiment")
+```
+
+```{r, echo = FALSE}
+fatBIE
+```
+
+Es pot observar que l'apartat `assay` no conté un nom concret (ja que com només n'hi ha 1 assaig no és necessari diferenciar-lo de cam més). En cas de volver-li afegir un nom, es pot fer ús d'`assayNames()`. De la mateixa forma, la metadata que es pot trobar fa referència bàsica per indicar d'on s'ha obtingut el `SummarizedExperiment`, però no de l'estudi en concret. Per solucionar-ho, es pot fer ús per exemple de les dades JSON de l'estudi. Carregant aquestes al programa emprant la llibreria `jsonlite`, es pot aconseguir extreure tota la informació que es pot considerar metadata i introduïr-la en el `SummarizedExperiment`, substituïnt la informació antiga per aquesta de més interés. 
+
+```{r, echo = FALSE}
+assayNames(fatBIE) <- "Metabolite Expression"
+
+metadata(fatBIE) <- list(Project = json_data$PROJECT, Study = json_data$STUDY, 
+            Subject = json_data$SUBJECT, Collection = json_data$COLLECTION, 
+            Treatment = json_data$TREATMENT, SamplePrep = json_data$SAMPLEPREP, 
+            Cromatography = json_data$CHROMATOGRAPHY, 
+            Analysis = json_data$ANALYSIS, MS = json_data$MS)
+```
+
+Es pot fer una observació, per exemple, a la primera observació de la metadata per veure quina informació conté i com està estructurada.
+
+```{r, echo = FALSE}
+metadata(fatBIE)[1]
+```
+
+
+```{r}
+# Realizar PCA
+valors_pca <- prcomp(t(assay(fatBIE)), scale. = TRUE)
+
+# Es crea un dataframe per poder visualitzar els resultats del PCA.
+dades_pca <- data.frame(Mostra = colnames(assay(fatBIE)), 
+                        PC1 = valors_pca$x[,1], PC2 = valors_pca$x[,2])
+
+# Amb `ggplot()` es genera el gràfic PCA.
+ggplot(dades_pca, aes(PC1, PC2)) + 
+  geom_point(aes(color = fatBIE$Plant_Wounding_Treatment), size = 2) +
+  labs(title = "PCA de fatBIE", x = "PC1", y = "PC2") + theme_classic()
+```
 
 - ANÀLISI EXPLORATÒRIA
+
+Un primer pas 
 
 # DISCUSSIÓ
 
 - REFLEXIÓ DE LES LIMITACIONS DE L'ESTUDI
-
-- REFLEXIÓ DEL TREBALL REALITZAT (EN EL CONTEXT DEL PROBLEMA BIOLÒGIC D'INTERÈS QUE ABORDA LA PEC)
 
 # CONCLUSIONS
 
