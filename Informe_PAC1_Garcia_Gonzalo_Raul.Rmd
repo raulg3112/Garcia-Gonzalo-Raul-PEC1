@@ -42,3 +42,49 @@ El nom de repositori ha de ser 'Cognom1-Cognom2-Nom-PEC1'. La direcció (*URL*) 
 
 Els recursos per dur a terme la PEC són els que s'han proporcionat en les diferents activitats del primer repte. A més, haureu de familiaritzar-vos amb la classe `SummarizedExperiment`. Per això podeu utilizar [aquest tutorial](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html) de Bioconductor. 
 
+# ABSTRACT
+
+- RESUM PROCÉS I PRINCIPALS RESULTATS
+
+# OBJECTIUS
+
+- ELECCIÓ DADES
+
+- CREACIÓ `SUMMARIZEDEXPERIMENT`
+
+- OBSERVACIÓ DE LES DADES
+
+# MÈTODES
+
+- FITXER (tipus de dades) I ENLLAÇ (font d'origen)
+
+- METODOLOGIA
+
+- EINES ESTADÍSTIQUES I BIOINFORMÀTIQUES UTILITZADES
+
+- PROCEDIMENT GENERAL D'ANÀLISI
+
+- ETC
+
+# RESULTATS
+
+- CREACIÓ `SUMMARIZEDEXPERIMENT`
+
+- ANÀLISI EXPLORATÒRIA
+
+# DISCUSSIÓ
+
+- REFLEXIÓ DE LES LIMITACIONS DE L'ESTUDI
+
+- REFLEXIÓ DEL TREBALL REALITZAT (EN EL CONTEXT DEL PROBLEMA BIOLÒGIC D'INTERÈS QUE ABORDA LA PEC)
+
+# CONCLUSIONS
+
+- SIMPLES I DIRECTES
+
+# REFERÈNCIES
+
+- Repositori GitHub: https://github.com/raulg3112/Garcia-Gonzalo-Raul-PEC1.git
+
+- DATA SELECCIONADA
+
