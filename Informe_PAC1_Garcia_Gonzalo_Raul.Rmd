@@ -1,0 +1,19 @@
+---
+title: "PAC1. Anàlisi de dades òmiques (M0-157)"
+author: "Raúl García"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+
