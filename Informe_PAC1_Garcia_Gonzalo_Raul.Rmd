@@ -37,24 +37,30 @@ dades <- json_data$MS_METABOLITE_DATA$Data
 # Transformació de la informació de totes les columnes a número emprant la funció `as.numeric()` Evitem la primera columna degut a que conté la informació dels metabolits.
 dades[ , -1] <- lapply(dades[ , -1], as.numeric)
 
-# Es converteix la información en matriu amb `as.matrix()`. Aquesta matriu es pot nombrar com matriu d'intensitat.
-matriu_intensitat <- as.matrix(dades[ , -1])
+# Es converteix la información en matriu amb `as.matrix()`. Aquesta matriu es pot nombrar com matriu d'expressió.
+matriu_expressio <- as.matrix(dades[ , -1])
 
 # S'afegeixen el nom dels metabolits a cada fila i els noms de cada columna.
-rownames(matriu_intensitat) <- dades[ , 1]
-colnames(matriu_intensitat) <- colnames(dades[ , -1])
+rownames(matriu_expressio) <- dades[ , 1]
+colnames(matriu_expressio) <- colnames(dades[ , -1])
 
 # Es genera un dataframe amb la informació per `colData`. 
 col_data <- DataFrame(json_data$SUBJECT_SAMPLE_FACTORS)
 
+# Es genera també el dataframe amn la informació per 'rowData'.
+row_data <- DataFrame(dades[[1]])
+rownames(row_data) <- rownames(matriu_expressio)
+
 # Generació de l'objecte de classe `SummarizedExperiment`.
-se <- SummarizedExperiment(assays = list(intensity = matriu_intensitat), colData = col_data)
+se <- SummarizedExperiment(assays = list(intensity = matriu_expressio), colData = col_data, rowData = row_data)
 
 # Paral·lelament, es generen les metadades de l'objecte. 
 metadata(se) <- list(Study = json_data$STUDY, Project = json_data$PROJECT, Subject = json_data$SUBJECT, Collection = json_data$COLLECTION, Treatment = json_data$TREATMENT, SamplePrep = json_data$SAMPLEPREP, Cromatography = json_data$CHROMATOGRAPHY, Analysis = json_data$ANALYSIS, MS = json_data$MS)
 ```
 
-3. Portar a terme una anàlisi exploratòria que proporcioni una visió general del dataset en la línia del que s'ha vist en les activitats d'aquest repte. 
+3. Portar a terme una anàlisi exploratòria que proporcioni una visió general del dataset en la línia del que s'ha vist en les activitats d'aquest repte.
+
+
 
 4. Elaborar un informe que descrigui el procés que s'ha utilitzat, incloent-hi la justificació de la selecció del dataset, la seva incorporació al `SummarizedExperiment`, l'anàlisi exploratòria de les dades i la interpretació dels resultats des del punt de vista biològic. L'extensió màxima d'aquest informe (sense tenir en compte els Annexos) ha de ser de **10 pàgines**), en format PDF.
 
