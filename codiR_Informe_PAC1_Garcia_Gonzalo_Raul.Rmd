@@ -1,0 +1,190 @@
+---
+title: "codiR_Informe_PAC1_Garcia_Gonzalo_Raul"
+author: "Raúl García"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include=FALSE}
+# Llibreries utilitzades al llarg de l'informe.
+library(jsonlite)
+library(metabolomicsWorkbenchR)
+library(SummarizedExperiment)
+library(tidyverse)
+library(POMA)
+library(ggplot2)
+```
+
+```{r input, include=FALSE}
+# S'itnrodueix informació del fitxer JSON que es troba a la base da dades
+# 'metabolomicsWorkbench' per imeplementar la metadata. 
+json_data <- fromJSON("data/ST000001_AN000001.json")
+```
+
+```{r}
+# Generació de l'objecte de classe 'SummarizedExperiment' a partir de la 
+# llibreria 'metabolomicsWorkbenchR'.
+
+# `do_query()`, de metabolomicsWorkbenchR, ens permet generar un objecte de 
+# classe `SummarizedExperiment` de manera directe desde metabolomicsWorkbench.
+# Aquest és un procés simple y senzill, degut que només se li ha d'indicar al 
+# programa el context (que s'ha d'indicar que es tracta d'un estudi) i quin és 
+# el seu identificador. Finalment, com a output s'indica que es generi l'objecte
+# 'SummarizedExperiment'. 
+fatBIE <- do_query(context = "study", input_item = "study_id", 
+                input_value = "ST000001", output_item = "SummarizedExperiment")
+```
+
+```{r, echo = FALSE}
+# Observació de la informació de l'objecte.
+
+# S'imprimeix la informació del 'SummarizedExperiment' per veure un resum de 
+# tota la informació que conté.
+fatBIE
+```
+
+```{r, echo = FALSE}
+# Canvi del nom de l'assaig amb `assayNames()` i canvi de la metadata per la 
+# que es troba al fitxer JSON carregat prèviament.
+
+# Amb `assayNames()` canviem el nom de l'assaig.
+assayNames(fatBIE) <- "Metabolite Expression"
+
+# S'utiltiza la funció `metadata()` per generar una llista amb la informació
+# carregada mitjançant la llibreria 'jsonlite', introduïnt tota la informació
+# que es considera metadata i substituïnt la anterior per aquesta.
+metadata(fatBIE) <- list(Project = json_data$PROJECT, Study = json_data$STUDY, 
+            Subject = json_data$SUBJECT, Collection = json_data$COLLECTION, 
+            Treatment = json_data$TREATMENT, SamplePrep = json_data$SAMPLEPREP, 
+            Cromatography = json_data$CHROMATOGRAPHY, 
+            Analysis = json_data$ANALYSIS, MS = json_data$MS)
+```
+
+```{r}
+# Comprovació de la informació que apareix de la metadata sobre l'estudi.
+
+# Agafem com exemple la metadata de l'estudi per veure quin tipus d'informació
+# s'hi pot trobar i comprovar que estigui ben carregada, ja que s'ha fet a mà.
+metadata(fatBIE)[2]
+```
+
+```{r, echo = FALSE}
+# Obtenció del nom de les columnes, que equival al nom de les mostres.
+
+# Cridem al nom de les columnes amb `colnames()`, la qual ens les imprimeix
+# totes per pantalla.
+colnames(fatBIE)
+```
+
+```{r, echo=FALSE}
+# Metadata de les columnes; és a dir, de les mostres.
+
+# Amb `head()` s'imprimeix la informació de les 6 primeres columnes per veure
+# quina informació contenen i com està distribuïda.
+head(colData(fatBIE))
+```
+
+```{r, echo=FALSE}
+# Metadata de les files; és a dir, dels diferents metabolits estudiats.
+
+# S'obtenen amb `head()` els 6 primers resultats de la informació de les 
+# columnes, amb el propòsit d'observar quin tipus d'informació contenen i com
+# està distribuïda.
+head(rowData(fatBIE))
+```
+
+```{r, echo=FALSE}
+# Canvi del nom de les files de l'assaig. Es porta a terme per fer que 
+# aparegui el nom de metabolit en comptes de l'identificador, ja que pot ser
+# més interessant saber de forma directe a quin metabolit fa referència cada
+# valor observat. Amb 'head()' es comprova que s'hagi fet correctament el canvi.
+
+# Es canvia el nom de les files de l'assaig perquè aparegui el nom dels 
+# metabolits i no el seu identificador.
+rownames(fatBIE) <- rowData(fatBIE)$metabolite_name
+# Amb `head()` es mostren per pantalla els noms de les 6 primeres files per 
+# comprovar que aquestes s'hagin canviat i ara es trobin els noms dels 
+# metabolits.
+head(rownames(fatBIE))
+```
+
+```{r, echo=FALSE}
+# Es normalitzen les dades i es crea el gràfic d'outliers, per observar com es
+# comporten les diferent poblacions.
+
+# Apliquen la normalització de les dades.
+norm_fatBIE <- fatBIE %>% PomaNorm(method = "log_pareto")
+colData(norm_fatBIE)$Factors <- paste(norm_fatBIE$Arabidopsis_Genotype, 
+                              norm_fatBIE$Plant_Wounding_Treatment, sep = "/")
+# S'utilitza 'PomaOutliers()' per generar el gràfic. Com a condició 'outcome' 
+# se li marca al programa que la metadata amb la informació de factors és la 
+# generada anteriorment, 'Factors'.
+PomaOutliers(norm_fatBIE, outcome = "Factors")$polygon_plot
+```
+
+```{r, echo=FALSE}
+# A partir del pre-processament de les dades, es genera un gràfic de l'anàlisi
+# de components principals (PCA).
+
+# Amb la mateixa fòrmula que abans `PomaOutliers`, es generen les dades 
+# utilitzades en el gràfic i s'emmagatzemen com a un nou objecte.
+fatBIE_processat <- PomaOutliers(norm_fatBIE, outcome = "Factors")$data
+
+# Es generen els valors de PCA amb la funció `prcomp()` i la transposada de les
+# dades processades.
+valors_pca <- prcomp(t(assay(fatBIE_processat)), center = TRUE, scale. = TRUE)
+
+# En un dataframe, s'emmagatzemen les dades de les mostres, els valors de PCA
+# que s'empraran al gràfic i els factors que agruparan les poblacions de les 
+# mostres.
+dades_pca <- data.frame(Mostra = colnames(assay(norm_fatBIE)), 
+                  PC1 = valors_pca$x[,1], PC2 = valors_pca$x[,2],
+                  Factors = paste(norm_fatBIE$Arabidopsis_Genotype, 
+                              norm_fatBIE$Plant_Wounding_Treatment,sep = " / "))
+
+# Amb l'ús de la funció `ggplot()`, es grafiquen els valors de PCA anteriors. 
+ggplot(dades_pca, aes(PC1, PC2)) + geom_point(aes(color = Factors), size = 2) +
+  labs(title = "PCA de fatBIE", x = "PC1", y = "PC2", 
+       color = "Genotip / Tractament:") + theme_classic()
+```
+
+```{r, echo=FALSE}
+# Diagrama de caixes dels valors del dataset de forma crua.
+PomaBoxplots(fatBIE, x = "samples")
+```
+
+```{r, echo=FALSE}
+# Diagrama de caixes dels valors del dataset normalitzats. 
+PomaBoxplots(norm_fatBIE, x = "samples")
+```
+
+```{r, echo=FALSE}
+# Resum estadístic dels valors de PCA.
+summary(valors_pca)
+```
+
+```{r, echo=FALSE}
+# Dades dels nivells metabolòmics de les plantes que no tenen mutació i no 
+# tenen ferides.
+assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[1] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[2]])
+```
+
+```{r, echo=FALSE}
+# Dades dels nivells metabolòmics de les plantes amb mutació i no tenen ferides.
+assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[1] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[1]])
+```
+
+```{r, echo=FALSE}
+# Dades dels nivells metabolòmics de les plantes que no tenen mutació i tenen 
+# ferides.
+assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[2] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[2]])
+```
+
+```{r, echo=FALSE}
+# Dades dels nivells metabolòmics de les plantes amb mutació i tene ferides.
+assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[2] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[1]])
+```

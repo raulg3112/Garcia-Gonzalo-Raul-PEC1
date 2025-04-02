@@ -3,10 +3,28 @@ title: "PAC1. Anàlisi de dades òmiques (M0-157)"
 author: "Raúl García"
 date: "`r Sys.Date()`"
 output:
-  html_document:
-    toc: true
   pdf_document:
     toc: true
+  html_document:
+    toc: true
+
+geometry: top = 0.75in, bottom = 0.75in, left = 1in, right = 1in
+fontsize: 10pt
+linestretch: 1
+editor_options:
+  markdown:
+    wrap: 72
+header-includes:
+- \usepackage{titling}
+- "\\pretitle{\\vspace{-1cm}\\begin{center}\\huge\\linespread{0.2}}"
+- "\\posttitle{\\par\\end{center}\\vspace{-2em}}"
+- \preauthor{\begin{center}\large\itshape\linespread{0.4}}
+- "\\postauthor{\\par\\end{center}\\vspace{-2em}}"
+- \predate{\begin{center}\large\itshape\linespread{0.4}}
+- \usepackage{tocloft}
+- "\\setlength{\\cftbeforetoctitleskip}{-0.5em}"
+- \setlength{\cftaftertoctitleskip}{0.5em}
+- \renewcommand{\contentsname}{\centering Contents}
 ---
 
 ```{r setup, include=FALSE}
@@ -206,31 +224,27 @@ Pel que fa a la creació de l'objecte `SummarizedExperiment`, es podrien veure c
 
 # REFERÈNCIES
 
-- Repositori GitHub: https://github.com/raulg3112/Garcia-Gonzalo-Raul-PEC1.git.
+1. Repositori GitHub: https://github.com/raulg3112/Garcia-Gonzalo-Raul-PEC1.git.
 
-- *FATb Induction Experiment FatBIE*. https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001. DOI: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B).
+2. *FATb Induction Experiment FatBIE*. https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001. DOI: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B).
 
-- *Example Using structToolbox*. https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html. 
+3. *Example Using structToolbox*. https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html. 
 
-- *`SummarizedExperiment` for Coordinating Experimental Assays, Samples and Regions of Interest*. https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html#introduction. 
+4. *`SummarizedExperiment` for Coordinating Experimental Assays, Samples and Regions of Interest*. https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html#introduction. 
 
-- *`ExpressionSet` and `SummarizedExperiment`*. https://www.sthda.com/english/wiki/expressionset-and-summarizedexperiment#licence.
+5. *`ExpressionSet` and `SummarizedExperiment`*. https://www.sthda.com/english/wiki/expressionset-and-summarizedexperiment#licence.
 
-- *Get Started*. Pol Castellano-Escuder, Ph.D. https://bioconductor.org/packages/release/bioc/vignettes/POMA/inst/doc/POMA-workflow.html
+6. *Get Started*. Pol Castellano-Escuder, Ph.D. https://bioconductor.org/packages/release/bioc/vignettes/POMA/inst/doc/POMA-workflow.html
 
-- Análisis de Componentes Principales (PCA). https://rpubs.com/cristina_gil/pca.
+7. Análisis de Componentes Principales (PCA). https://rpubs.com/cristina_gil/pca.
 
 # ANNEXOS
 
 ## Annex 1. Diagrames de caixes de `fatBIE` i `norm_fatBIE`.
 
-*Boxplot* de `fatBIE`:
-
 ```{r, echo=FALSE}
 PomaBoxplots(fatBIE, x = "samples")
 ```
-
-*Boxplot* de `norm_fatBIE`:
 
 ```{r, echo=FALSE}
 PomaBoxplots(norm_fatBIE, x = "samples")
@@ -241,7 +255,6 @@ PomaBoxplots(norm_fatBIE, x = "samples")
 ```{r, echo=FALSE}
 summary(valors_pca)
 ```
-
 
 ## Annex 3. Nivells de metabolits de plantes sense la mutació i no tractades amb ferides. 
 
