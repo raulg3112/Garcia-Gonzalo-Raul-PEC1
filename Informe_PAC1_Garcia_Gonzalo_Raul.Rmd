@@ -26,10 +26,6 @@ json_data <- fromJSON("data/ST000001_AN000001.json")
 
 # Descripció de la PAC
 
-2. Quines són les seves principals diferències amb la classe `ExpressionSet`?
-
-3. Portar a terme una anàlisi exploratòria que proporcioni una visió general del dataset en la línia del que s'ha vist en les activitats d'aquest repte.
-
 4. Elaborar un informe que descrigui el procés que s'ha utilitzat, incloent-hi la justificació de la selecció del dataset, la seva incorporació al `SummarizedExperiment`, l'anàlisi exploratòria de les dades i la interpretació dels resultats des del punt de vista biològic. L'extensió màxima d'aquest informe (sense tenir en compte els Annexos) ha de ser de **10 pàgines**), en format PDF.
 
 5. Crear un respositori GitHub que contingui: 
@@ -40,7 +36,7 @@ json_data <- fromJSON("data/ST000001_AN000001.json")
 
 * el codi R per a l'exploració de les dades degudament comentat (el control de versions del mateix s'ha de realitzar amb Git)
 
-* les metadades acompanyados d'una breu descripció en un arxiu markdown
+* les metadades acompanyades d'una breu descripció en un arxiu markdown
 
 
 # ABSTRACT
@@ -65,25 +61,36 @@ Les llibreries emprades per poder generar tant l'objecte `SummarizedExperiment` 
 
 `SummarizedExperiment`, a diferència d'altres classes, permet una alta flexibilitat  per tal d'emmagatzemar diferents tipus de dades. Més concretament, això es deu a que és capaç d'emmagatzemar diferents dades experimentals a la vegada en el mateix objecte, permetent a la vegada emmagatzemar i gestionar metadades tant per les diferents dades experimentals com per a la informació que es troba a les files i les columnes. Aquest fet diferencia aquest tipus de classe que la d'`ExpressionSet`, la qual funciona de forma similar, però està centrada en poder emmagatzemar dades d'expressions gèniques; aquest fet fa que aquesta classe tingui una estructura més rígida. Per tant, si es volen fer estudis de dades més variades, la millor opció seria emprar `SummarizedExperiment`. Cal recalcar que `SummarizedExperiment` és una extensió d'`ExpressionSet`, i és per això que son tan semblants entre sí. 
 
-- PROCEDIMENT GENERAL D'ANÀLISI
-
 # RESULTATS
 
 D'entre les diferents opcions existents per poder generar l'objecte `SummarizedExperiment`, es va decantar per l'ús de la llibreria `metabolomicsWorkbenchR`, que permet implementar en R les dades i metadades dels estudis de forma directe, emprant una funció junt amb certes condicions. Amb `do_query()` i les condicions `context = "study"`, `input_item = "study_id"` i `input_value = "ST000001"`, se li marca al programa l'estudi concret al que es vol adreçar, i emprant per últim `output_item = "SummarizedExperiment"` s'aconsegueix obtenir l'objecte de classe `SummarizedExperiment. A continuació es pot veure un resum de la informació que contenia l'estudi seleccionat:
 
 ```{r}
-fatBIE <- do_query(context = "study", input_item = "study_id", input_value = "ST000001", output_item = "SummarizedExperiment")
+# `do_query()`, de metabolomicsWorkbenchR, ens permet generar un objecte de 
+# classe `SummarizedExperiment` de manera directe desde metabolomicsWorkbench.
+# Aquest és un procés simple y senzill, degut que només se li ha d'indicar al 
+# programa el context (que s'ha d'indicar que es tracta d'un estudi) i quin és 
+# el seu identificador. Finalment, com a output s'indica que es generi l'objecte
+# 'SummarizedExperiment'. 
+fatBIE <- do_query(context = "study", input_item = "study_id", 
+                input_value = "ST000001", output_item = "SummarizedExperiment")
 ```
 
 ```{r, echo = FALSE}
+# S'imprimeix la informació del 'SummarizedExperiment' per veure un resum de 
+# tota la informació que conté.
 fatBIE
 ```
 
 En el resultat es va veure que l'apartat `assay` no contenia un nom concret (ja que com només hi havia un assaig no era necessari diferenciar-lo de cap més). En cas de volver-li afegir un nom, es pot fer ús d'`assayNames()`. De la mateixa forma, la metadata que es trobava a l'objecte feia referència a d'on s'havia obtingut el `SummarizedExperiment`, però no de l'estudi en concret. Per solucionar-ho, es va fer ús de les dades JSON de l'estudi. Carregant aquestes al programa emprant la llibreria `jsonlite`, es va aconseguir extreure tota la informació que es va considerar com a  metadata i es va introduir al `SummarizedExperiment`, substituïnt la informació antiga per aquesta de més interés. 
 
 ```{r, echo = FALSE}
+# Amb `assayNames()` canviem el nom de l'assaig.
 assayNames(fatBIE) <- "Metabolite Expression"
 
+# S'utiltiza la funció `metadata()` per generar una llista amb la informació
+# carregada mitjançant la llibreria 'jsonlite', introduïnt tota la informació
+# que es considera metadata i substituïnt la anterior per aquesta.
 metadata(fatBIE) <- list(Project = json_data$PROJECT, Study = json_data$STUDY, 
             Subject = json_data$SUBJECT, Collection = json_data$COLLECTION, 
             Treatment = json_data$TREATMENT, SamplePrep = json_data$SAMPLEPREP, 
@@ -94,6 +101,8 @@ metadata(fatBIE) <- list(Project = json_data$PROJECT, Study = json_data$STUDY,
 Es va fer una observació de la segona observació de la metadata per veure quina informació cotenia i com aquesta estava estructurada.
 
 ```{r, echo = FALSE}
+# Agafem com exemple la metadata de l'estudi per veure quin tipus d'informació
+# s'hi pot trobar i comprovar que estigui ben carregada, ja que s'ha fet a mà.
 metadata(fatBIE)[2]
 ```
 
@@ -104,12 +113,16 @@ Un cop vista la informació de les dades i la metadada del `SummarizedExperiment
 Es va veure que l'estudi contenia un total de `r dim(assay(fatBIE))[1]` observacions que feien referència a diferentes metabolits, relacioants amb `r dim(assay(fatBIE))[2]` columnes, que eren les mostres que s'havien utilitzat en aquest. Per obtenir el nom d'aquestes, es va emprar `colnames()`
 
 ```{r, echo = FALSE}
+# Cridem al nom de les columnes amb `colnames()`, la qual ens les imprimeix
+# totes per pantalla.
 colnames(fatBIE)
 ```
 
-A partir de l'objecte creat anteriorment, es va utilitzar `colData()` per tal d'obtenir la informació addicional de les mostres. Es va utilitzar `head( , 6)` per observar només la informació de les 6 primeres mostres, ja que no és necessari imprimir-les totes per tenir una idea de quina informació contenen.
+A partir de l'objecte creat anteriorment, es va utilitzar `colData()` per tal d'obtenir la informació addicional de les mostres. Es va utilitzar `head()` per observar només la informació de les 6 primeres mostres, ja que no és necessari imprimir-les totes per tenir una idea de quina informació contenen.
 
 ```{r, echo=FALSE}
+# Amb `head()` s'imprimeix la informació de les 6 primeres columnes per veure
+# quina informació contenen i com està distribuïda.
 head(colData(fatBIE))
 ```
 
@@ -117,14 +130,22 @@ Es va observar que cada mostra contenia un ID de l'estudi (siguent aquest el mat
 
 De la mateixa manera es va obtenir la informació de les files amb `rowData()`. També es va decidir per només mostrar els 6 primers resultats. 
 
-```{r}
+```{r, echo=FALSE}
+# S'obtenen amb `head()` els 6 primers resultats de la informació de les 
+# columnes, amb el propòsit d'observar quin tipus d'informació contenen i com
+# està distribuïda.
 head(rowData(fatBIE))
 ```
 
 En aquest cas, es va observar que a les dades apareixia l'identificador del metabolit i no el nom d'aquest, de forma que es va decidir emprar la funció `rownames()` per canviar-ho i que aparegués el nom. 
 
 ```{r, echo=FALSE}
+# Es canvia el nom de les files de l'assaig perquè aparegui el nom dels 
+# metabolits i no el seu identificador.
 rownames(fatBIE) <- rowData(fatBIE)$metabolite_name
+# Amb `head()` es mostren per pantalla els noms de les 6 primeres files per 
+# comprovar que aquestes s'hagin canviat i ara es trobin els noms dels 
+# metabolits.
 head(rownames(fatBIE))
 ```
 
@@ -193,7 +214,13 @@ Per tant, de l'anàlisi de components principals es va concloure que el fet que 
 
 # CONCLUSIONS
 
-- SIMPLES I DIRECTES
+* En situacions normals, les plantes amb mutacions no demostren diferències amb els controls. 
+
+* Les plantes sense mutació i amb ferida demostren una diferència metabolòmica significativa amb les que no en tenen.
+
+* Les plantes amb mutacions veuen afectats els seus nivells metabolòmics quan tenen una ferida.
+
+* Les plantes amb mutacions i ferides presenten diferències significatives a nivells metabolòmics amb els altres grups.
 
 # REFERÈNCIES
 
