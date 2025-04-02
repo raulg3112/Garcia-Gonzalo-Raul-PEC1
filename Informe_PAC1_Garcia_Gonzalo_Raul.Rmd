@@ -26,22 +26,9 @@ library(ggplot2)
 json_data <- fromJSON("data/ST000001_AN000001.json")
 ```
 
-# Descripció de la PAC
-
-5. Crear un respositori GitHub que contingui: 
-
-* l'informe
-
-* l'objecte de classe `SummarizedExperiment` que contingui les dades i les metadades en format binari (.Rda)
-
-* el codi R per a l'exploració de les dades degudament comentat (el control de versions del mateix s'ha de realitzar amb Git)
-
-* les metadades acompanyades d'una breu descripció en un arxiu markdown
-
-
 # ABSTRACT
 
-- RESUM PROCÉS I PRINCIPALS RESULTATS
+S'ha portat a terme un análisi da des òmiques emprant dades d'un estudi de dades metabolòmiques que s'han processat en un objecte de classe `SummarizedExperiment`. S'han realizat una observació, un pre-processament i un posterior anàlisi exploratori per obtenir una visió general de les dades. Emprant l'anàlisi del components principals (PCA), s'han pogut diferenciar les expressions dels metabolits per cadascun dels grups de plantes de l'estudi. Els resultats reflexen variacions de les expressions metabolòmiques, donant un canvi en les plantes que contenen la mutació a FatB i presenten ferides, sugerint que la producció dels metabolits es veu afectada per la seva resposta.
 
 # OBJECTIUS
 
