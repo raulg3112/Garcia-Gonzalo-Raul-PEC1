@@ -46,21 +46,15 @@ json_data <- fromJSON("data/ST000001_AN000001.json")
 
 El nom de repositori ha de ser 'Cognom1-Cognom2-Nom-PEC1'. La direcció (*URL*) del repositori haurà d'estar inclosa en l'informe de manera clara. Teniu en compte que a través de CANVAS deveu lliurar únicament l'informe. 
 
-# Recursos
-
-Els recursos per dur a terme la PEC són els que s'han proporcionat en les diferents activitats del primer repte. A més, haureu de familiaritzar-vos amb la classe `SummarizedExperiment`. Per això podeu utilizar [aquest tutorial](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html) de Bioconductor. 
-
 # ABSTRACT
 
 - RESUM PROCÉS I PRINCIPALS RESULTATS
 
 # OBJECTIUS
 
-- ELECCIÓ DADES
+El principal objectiu d'aquesta activitat és, a partir d'un dataset escollit, generar un objecte de classe `SummarizedExperiment` que contingui les dades i metadades d'aquest, i a partir de l'objecte generar un anàlisi exploratori que permeti obtenir una visió general de les dades prou extensa com per poder arribar a algunes conclusions sobre aquest. 
 
-- CREACIÓ `SUMMARIZEDEXPERIMENT`
-
-- OBSERVACIÓ DE LES DADES
+Pel que fa a l'estudi, el seu objectiu va ser observar quines eren les conseqüències d'una mutació que es localitzava al gen FatB d'*Arabidopsis* (denominada At1g08510) en la resposta a les ferides. 
 
 # MÈTODES
 
@@ -104,6 +98,15 @@ Es pot fer una observació, per exemple, a la primera observació de la metadata
 metadata(fatBIE)[1]
 ```
 
+Com a primer pas de l'anàlisi exploratori de l'estudi, es podria partir de l'ús de funcions d'R com `dim()`, `str()` o `summary()` sobre les dades de l'assaig.
+
+Es pot observar que l'estudi conté un total de `r dim(assay(fatBIE))[1]` observacions que fan referència a diferentes metabolits, relacioants amb `r dim(assay(fatBIE))[2]` columnes, que son les mostres que s'han utilitzat en aquest. Per obtenir el nom d'aquestes, es pot emprar `colnames()`
+
+```{r, echo = FALSE}
+colnames(fatBIE)
+```
+
+
 
 ```{r}
 # Realizar PCA
@@ -115,7 +118,7 @@ dades_pca <- data.frame(Mostra = colnames(assay(fatBIE)),
 
 # Amb `ggplot()` es genera el gràfic PCA.
 ggplot(dades_pca, aes(PC1, PC2)) + 
-  geom_point(aes(color = fatBIE$Plant_Wounding_Treatment), size = 2) +
+  geom_point(aes(color = fatBIE$Arabidopsis_Genotype), size = 2) +
   labs(title = "PCA de fatBIE", x = "PC1", y = "PC2") + theme_classic()
 ```
 
@@ -138,3 +141,7 @@ Un primer pas
 - *FATb Induction Experiment FatBIE*. https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001. DOI: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B).
 
 - *Example Using structToolbox*. https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html. 
+
+- *`SummarizedExperiment` for Coordinating Experimental Assays, Samples and Regions of Interest*. https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html#introduction. 
+
+- *`ExpressionSet` and `SummarizedExperiment`*. https://www.sthda.com/english/wiki/expressionset-and-summarizedexperiment#licence.
