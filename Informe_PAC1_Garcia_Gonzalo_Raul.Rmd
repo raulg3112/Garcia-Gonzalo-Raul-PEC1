@@ -152,6 +152,10 @@ rownames(fatBIE) <- rowData(fatBIE)$metabolite_name
 # comprovar que aquestes s'hagin canviat i ara es trobin els noms dels 
 # metabolits.
 head(rownames(fatBIE))
+
+# Un cop comprovada tota la informació, es guarda l'objecte de classe
+# 'SummarizedExperiment' creat en el repositori en format binari (.Rda)
+save(fatBIE, file = "fatBIE_SummarizedExperiment.Rda")
 ```
 
 Per tal de poder fer un estudi més exhaustiu, es va procedir amb l'anàlisi de components principals (PCA), per tal d'intentar observar algun patró en les dades o identificar diferents poblacions en aquestes. Es van generar dos gráfiques diferents, una d'elles pel genotip de la planta i un d'altre pel tractament que se li havia aplicat en aquesta. 

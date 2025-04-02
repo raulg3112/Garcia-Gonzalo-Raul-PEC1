@@ -110,6 +110,10 @@ rownames(fatBIE) <- rowData(fatBIE)$metabolite_name
 # comprovar que aquestes s'hagin canviat i ara es trobin els noms dels 
 # metabolits.
 head(rownames(fatBIE))
+
+# Un cop comprovada tota la informació, es guarda l'objecte de classe
+# 'SummarizedExperiment' creat en el repositori en format binari (.Rda)
+save(fatBIE, file = "fatBIE_SummarizedExperiment.Rda")
 ```
 
 ```{r, echo=FALSE}
