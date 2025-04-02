@@ -55,9 +55,9 @@ Pel que fa a l'estudi, el seu objectiu va ser observar quines eren les conseqü�
 
 # MÈTODES
 
-Es va escollir emprar les dades de l'estudi anomenat *Fatb Induction Experiment (FatBIE)*, que es pot trobar al següent [enllaç](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001). A la vegada, el DOI de l'estudi és: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B). Aquest tracta sobre una mutació (At1g08510) en el gen FatB de la planta *Arabidopsis*, de la qual es vol observar les conseqüències que comporta en la resposta de les plantes a ferides. 
+Es va escollir emprar les dades de l'estudi anomenat *Fatb Induction Experiment (FatBIE)*, que es pot trobar al següent [enllaç](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001). A la vegada, el DOI de l'estudi és: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B). Aquest tracta sobre una mutació (At1g08510) en el gen FatB de la planta *Arabidopsis*, de la qual es vol observar les conseqüències que comporta en la resposta de les plantes a ferides. Per tal de valorar quina és la seva resposta, analitzen els nivells de diferents metabolits produïts per la planta, i comparen aquests amb plantes amb o sense la mutació a les que els hi han fet ferides o que no els hi han fet.
 
-L'elecció d'aquest respecte altres va ser, a més de què a simple vista sembla que conté suficients dades i metadades com per poder portar a terme un objecte `SummarizedExperiment` amb contingut, per pròpia trajectòria personal. Anteriorment vaig estar un període de temps fent pràctiques al CRAG ([Centre for Research in Agricultural Genomics](https://www.cragenomica.es/)), on vaig treballar just amb aquest tipus de planta. A més, un altre investigador del mateix laboratori treballava estudiant la resposta que tenien plantes d'*Arabidopsis* amb diferents genotips a ferides. 
+L'elecció d'aquest estudi respecte altres va ser, a més de què a simple vista sembla que conté suficients dades i metadades com per poder portar a terme un objecte `SummarizedExperiment` amb contingut, per pròpia trajectòria personal. Anteriorment vaig estar un període de temps fent pràctiques al CRAG ([Centre for Research in Agricultural Genomics](https://www.cragenomica.es/)), on vaig treballar just amb aquest tipus de planta. A més, un altre investigador del mateix laboratori treballava estudiant la resposta que tenien plantes d'*Arabidopsis* amb diferents genotips a ferides. 
 
 Per poder portar a terme l'assaig, es va crear un `SummarizedExperiment` que conté la informació (dades/metadades) de l'estudi. A partir d'aquest, es va procedir a realitzar l'anàlisi exploratori necessari, per tal de poder entendre els resultats de l'estudi i obtendre conclusions d'aquests.
 
@@ -69,7 +69,7 @@ Les llibreries emprades per poder generar tant l'objecte `SummarizedExperiment` 
 
 # RESULTATS
 
-D'entre les diferents opcions existents per poder generar l'objecte `SummarizedExperiment`, s'ha decantat per l'ús de la llibreria `metabolomicsWorkbenchR`, que permet implementar en R les dades i metadades dels estudis de forma directe, emprant una funció junt amb certes condicions. Amb `do_query()` i les condicions `context = "study"`, `input_item = "study_id"` i `input_value = "ST000001"`, se li marca al programa l'estudi concret al que es vol adreçar, i emprant per últim `output_item = "SummarizedExperiment"` s'aconsegueix obtenir l'objecte de classe `SummarizedExperiment. A continuació es pot veure un resum de la informació que conté:
+D'entre les diferents opcions existents per poder generar l'objecte `SummarizedExperiment`, es va decantar per l'ús de la llibreria `metabolomicsWorkbenchR`, que permet implementar en R les dades i metadades dels estudis de forma directe, emprant una funció junt amb certes condicions. Amb `do_query()` i les condicions `context = "study"`, `input_item = "study_id"` i `input_value = "ST000001"`, se li marca al programa l'estudi concret al que es vol adreçar, i emprant per últim `output_item = "SummarizedExperiment"` s'aconsegueix obtenir l'objecte de classe `SummarizedExperiment. A continuació es pot veure un resum de la informació que contenia l'estudi seleccionat:
 
 ```{r}
 fatBIE <- do_query(context = "study", input_item = "study_id", input_value = "ST000001", output_item = "SummarizedExperiment")
@@ -79,7 +79,7 @@ fatBIE <- do_query(context = "study", input_item = "study_id", input_value = "ST
 fatBIE
 ```
 
-Es pot observar que l'apartat `assay` no conté un nom concret (ja que com només n'hi ha 1 assaig no és necessari diferenciar-lo de cam més). En cas de volver-li afegir un nom, es pot fer ús d'`assayNames()`. De la mateixa forma, la metadata que es pot trobar fa referència bàsica per indicar d'on s'ha obtingut el `SummarizedExperiment`, però no de l'estudi en concret. Per solucionar-ho, es pot fer ús per exemple de les dades JSON de l'estudi. Carregant aquestes al programa emprant la llibreria `jsonlite`, es pot aconseguir extreure tota la informació que es pot considerar metadata i introduïr-la en el `SummarizedExperiment`, substituïnt la informació antiga per aquesta de més interés. 
+En el resultat es va veure que l'apartat `assay` no contenia un nom concret (ja que com només hi havia un assaig no era necessari diferenciar-lo de cap més). En cas de volver-li afegir un nom, es pot fer ús d'`assayNames()`. De la mateixa forma, la metadata que es trobava a l'objecte feia referència a d'on s'havia obtingut el `SummarizedExperiment`, però no de l'estudi en concret. Per solucionar-ho, es va fer ús de les dades JSON de l'estudi. Carregant aquestes al programa emprant la llibreria `jsonlite`, es va aconseguir extreure tota la informació que es va considerar com a  metadata i es va introduir al `SummarizedExperiment`, substituïnt la informació antiga per aquesta de més interés. 
 
 ```{r, echo = FALSE}
 assayNames(fatBIE) <- "Metabolite Expression"
@@ -91,37 +91,101 @@ metadata(fatBIE) <- list(Project = json_data$PROJECT, Study = json_data$STUDY,
             Analysis = json_data$ANALYSIS, MS = json_data$MS)
 ```
 
-Es pot fer una observació, per exemple, a la primera observació de la metadata per veure quina informació conté i com està estructurada.
+Es va fer una observació de la segona observació de la metadata per veure quina informació cotenia i com aquesta estava estructurada.
 
 ```{r, echo = FALSE}
-metadata(fatBIE)[1]
+metadata(fatBIE)[2]
 ```
 
-Com a primer pas de l'anàlisi exploratori de l'estudi, es podria partir de l'ús de funcions d'R com `dim()`, `str()` o `summary()` sobre les dades de l'assaig.
+Es pot veure com la metadata ara conté informació sobre l'estudi i l'investigador principal que el va dur a terme.
 
-Es pot observar que l'estudi conté un total de `r dim(assay(fatBIE))[1]` observacions que fan referència a diferentes metabolits, relacioants amb `r dim(assay(fatBIE))[2]` columnes, que son les mostres que s'han utilitzat en aquest. Per obtenir el nom d'aquestes, es pot emprar `colnames()`
+Un cop vista la informació de les dades i la metadada del `SummarizedExperiment` de forma ràpida, es va procedir a fer un breu anàlisi de les dades. Com a primer pas es va decidir fer ús de `dim()` per obtenir les dimensions de l'assaig; en altres paraules, el nombre d'observacions i de variables.
+
+Es va veure que l'estudi contenia un total de `r dim(assay(fatBIE))[1]` observacions que feien referència a diferentes metabolits, relacioants amb `r dim(assay(fatBIE))[2]` columnes, que eren les mostres que s'havien utilitzat en aquest. Per obtenir el nom d'aquestes, es va emprar `colnames()`
 
 ```{r, echo = FALSE}
 colnames(fatBIE)
 ```
 
+A partir de l'objecte creat anteriorment, es va utilitzar `colData()` per tal d'obtenir la informació addicional de les mostres. Es va utilitzar `head( , 6)` per observar només la informació de les 6 primeres mostres, ja que no és necessari imprimir-les totes per tenir una idea de quina informació contenen.
 
+```{r, echo=FALSE}
+head(colData(fatBIE))
+```
+
+Es va observar que cada mostra contenia un ID de l'estudi (siguent aquest el mateix per totes), la font de la que provenia la mostra (que en aquest cas tot eren plantes) i un ID per dintre de *metabolomicsWorkbench* (`mb_sample_id`). Aquest últim identificador sí que era únic per cada mostra. També es va observar que també contenia informació pel genotip de la planta (*wassilewskija (Ws)* o *fatb-ko KD*), siguent la segona la que representava a les plantes amb la mutació a fatB. Per finalitzar, `Plant_Wounding_Treatment` indicava si la planta havia estat ferida (*Wounded*) o no (*Control - Non-Wounded*). 
+
+De la mateixa manera es va obtenir la informació de les files amb `rowData()`. També es va decidir per només mostrar els 6 primers resultats. 
 
 ```{r}
-# Realizar PCA
+head(rowData(fatBIE))
+```
+
+En aquest cas, es va observar que a les dades apareixia l'identificador del metabolit i no el nom d'aquest, de forma que es va decidir emprar la funció `rownames()` per canviar-ho i que aparegués el nom. 
+
+```{r, echo=FALSE}
+rownames(fatBIE) <- rowData(fatBIE)$metabolite_name
+head(rownames(fatBIE))
+```
+
+Per tal de poder fer un estudi més exhaustiu, es va procedir amb l'anàlisi de components principals (PCA), per tal d'intentar observar algun patró en les dades o identificar diferents poblacions en aquestes. Es van generar dos gráfiques diferents, una d'elles pel genotip de la planta i un d'altre pel tractament que se li havia aplicat en aquesta. 
+
+```{r, echo=FALSE}
+# S'obtenen els valors de PCA amb `prcomp()`. Es genera la transposada de 
+# l'assaig perquè aquesta sigui possible de dur-se a terme. També, s'empra 
+# la condició 'scale. = TRUE', ja que és recomendable utilitzar-la.
 valors_pca <- prcomp(t(assay(fatBIE)), scale. = TRUE)
 
-# Es crea un dataframe per poder visualitzar els resultats del PCA.
+# Es crea un dataframe per poder visualitzar els resultats del PCA. Aquest
+# inclou el nom de les mostres, els valors de PC1 i els valors de PC2.
 dades_pca <- data.frame(Mostra = colnames(assay(fatBIE)), 
                         PC1 = valors_pca$x[,1], PC2 = valors_pca$x[,2])
 
-# Amb `ggplot()` es genera el gràfic PCA.
+# Amb `ggplot()` es genera el gràfic PCA. S'agrupen els valors per cadascun
+# dels factors de 'Arabidopsis_Genotype'.
 ggplot(dades_pca, aes(PC1, PC2)) + 
   geom_point(aes(color = fatBIE$Arabidopsis_Genotype), size = 2) +
-  labs(title = "PCA de fatBIE", x = "PC1", y = "PC2") + theme_classic()
+  labs(title = "PCA de fatBIE", x = "PC1", y = "PC2", 
+       color = "Genotip d'Arabidopsis:") + theme_classic()
 ```
 
-- ANÀLISI EXPLORATÒRIA
+De l'agrupació per genotip es va obtenir el resultat que, de forma majoritària (tot i que amb alguns casos desplaçats), es podia donar una separació entre els dos genotips. Amb altres paraules, aquest gràfic va sugerir que la mutació en el gen FatB afectava significativament al perfil metabolòmic que presentaven les plantes com a resposta a ferides. 
+
+```{r, echo=FALSE}
+# Es realitza el mateix gràfic que abans però ara agrupant els valors per cada
+# un dels factors de 'Plant_Wounding_Treatment'.
+ggplot(dades_pca, aes(PC1, PC2)) + 
+  geom_point(aes(color = fatBIE$Plant_Wounding_Treatment), size = 2) +
+  labs(title = "PCA de fatBIE", x = "PC1", y = "PC2", 
+       color = "Tractament de la planta:") + theme_classic()
+```
+
+A l'agrupar per les plantes amb ferides o les control, es va observar una notable separació entre els grups, sugerint també que el tractament afectava significativament als valors dels metabolits com a resposta a ferides. 
+
+Arribat a aquestes suposicions, es va decidir generar un últim gràfic juntant ambdós clasifcadors, `Arabidopsis_Genotype` i `Plant_Wounding_Treatment`.
+
+```{r, echo=FALSE}
+
+# Es genera de nou el dataframe anterior, només que ara s'hi iclou la
+# informació de cada un dels factors 'Arabidopsis_Genotype' i 'Plant_Wounding_
+# Treatment' en un mateix grup.
+dades_pca <- data.frame(Mostra = colnames(assay(fatBIE)), 
+                      PC1 = valors_pca$x[,1], PC2 = valors_pca$x[,2],
+                      Factors = paste(fatBIE$Arabidopsis_Genotype, 
+                                  fatBIE$Plant_Wounding_Treatment,sep = " / "))
+
+# Es torna a generar el gràfic amb `ggplot()`. Aquest cop, s'empren els dos
+# nous valors del dataframe per generar, amb `interaction()`, les 4 poblacions
+# diferents de l'estudi i poder observar les diferents agrupacions d'aquestes.
+ggplot(dades_pca, aes(PC1, PC2)) + geom_point(aes(color = Factors), size = 2) +
+  labs(title = "PCA de fatBIE", x = "PC1", y = "PC2", 
+       color = "Genotip / Tractament:") + theme_classic()
+```
+
+Amb aquest últim gràfic, es va arribar a la conclusió de que es podien diferenciar 3 grups diferents: primer de tot, un que consistia en les plantes que tenien o no la mutació, però que no havien estat sotmeses a una ferida. Per altra banda, es va concloure que la mutació afecta a la resposta de les plantes a ferides a nivell metabolòmic degut que els dos grups s'observaven completament distanciats en el gràfic de PCA. 
+
+Per tant, de l'anàlisi de components principals es va concloure que el fet que una planta tingués la mutació no afectava de forma directa als nivells de metabolits en una planta que no tingués cap ferida, però quan aquesta sí que tenia una ferida es donava una resposta diferent tant de les plantes que no tenien ferides com de les que sí però que no tenien la mutació en el seu genoma. 
+
 
 # DISCUSSIÓ
 
@@ -142,3 +206,5 @@ ggplot(dades_pca, aes(PC1, PC2)) +
 - *`SummarizedExperiment` for Coordinating Experimental Assays, Samples and Regions of Interest*. https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html#introduction. 
 
 - *`ExpressionSet` and `SummarizedExperiment`*. https://www.sthda.com/english/wiki/expressionset-and-summarizedexperiment#licence.
+
+- Análisis de Componentes Principales (PCA). https://rpubs.com/cristina_gil/pca.
