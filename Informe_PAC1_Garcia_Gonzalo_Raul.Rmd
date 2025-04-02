@@ -40,11 +40,8 @@ json_data <- fromJSON("data/ST000001_AN000001.json")
 
 * el codi R per a l'exploració de les dades degudament comentat (el control de versions del mateix s'ha de realitzar amb Git)
 
-* dades en format text
-
 * les metadades acompanyados d'una breu descripció en un arxiu markdown
 
-El nom de repositori ha de ser 'Cognom1-Cognom2-Nom-PEC1'. La direcció (*URL*) del repositori haurà d'estar inclosa en l'informe de manera clara. Teniu en compte que a través de CANVAS deveu lliurar únicament l'informe. 
 
 # ABSTRACT
 
@@ -54,19 +51,21 @@ El nom de repositori ha de ser 'Cognom1-Cognom2-Nom-PEC1'. La direcció (*URL*) 
 
 El principal objectiu d'aquesta activitat és, a partir d'un dataset escollit, generar un objecte de classe `SummarizedExperiment` que contingui les dades i metadades d'aquest, i a partir de l'objecte generar un anàlisi exploratori que permeti obtenir una visió general de les dades prou extensa com per poder arribar a algunes conclusions sobre aquest. 
 
-Pel que fa a l'estudi, el seu objectiu va ser observar quines eren les conseqüències d'una mutació que es localitzava al gen FatB d'*Arabidopsis* (denominada At1g08510) en la resposta a les ferides. 
+Pel que fa a l'estudi, el seu objectiu va ser observar quines eren les conseqüències d'una mutació que es localitzava al gen FatB d'*Arabidopsis* en la resposta a les ferides. 
 
 # MÈTODES
 
-S'ha escollit emprar les dades de l'estudi anomenat *Fatb Induction Experiment (FatBIE)*, que es pot trobar al següent [enllaç](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001). A la vegada, el DOI de l'estudi és: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B).
+Es va escollir emprar les dades de l'estudi anomenat *Fatb Induction Experiment (FatBIE)*, que es pot trobar al següent [enllaç](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST000001). A la vegada, el DOI de l'estudi és: [10.21228/M8159B](http://dx.doi.org/10.21228/M8159B). Aquest tracta sobre una mutació (At1g08510) en el gen FatB de la planta *Arabidopsis*, de la qual es vol observar les conseqüències que comporta en la resposta de les plantes a ferides. 
 
-SUMMARIZEDEXPERIMENT vs EXPRESSIONSET.
+L'elecció d'aquest respecte altres va ser, a més de què a simple vista sembla que conté suficients dades i metadades com per poder portar a terme un objecte `SummarizedExperiment` amb contingut, per pròpia trajectòria personal. Anteriorment vaig estar un període de temps fent pràctiques al CRAG ([Centre for Research in Agricultural Genomics](https://www.cragenomica.es/)), on vaig treballar just amb aquest tipus de planta. A més, un altre investigador del mateix laboratori treballava estudiant la resposta que tenien plantes d'*Arabidopsis* amb diferents genotips a ferides. 
 
-Les llibreries emprades per poder generar `SummarizedExperiment` i l'anàlisi exploratori han sigut `jsonlite`, `metabolomicsWorkbenchR`,  `SummarizedExperiment` i `ggplot2`, junt amb funcions bàsiques de R.
+Per poder portar a terme l'assaig, es va crear un `SummarizedExperiment` que conté la informació (dades/metadades) de l'estudi. A partir d'aquest, es va procedir a realitzar l'anàlisi exploratori necessari, per tal de poder entendre els resultats de l'estudi i obtendre conclusions d'aquests.
+
+Les llibreries emprades per poder generar tant l'objecte `SummarizedExperiment` com l'anàlisi exploratori van ser `jsonlite`, `metabolomicsWorkbenchR`,  `SummarizedExperiment` i `ggplot2`, junt amb funcions bàsiques de R que no necessiten de l'instal·lació d'una llibreria per funcionar.
+
+`SummarizedExperiment`, a diferència d'altres classes, permet una alta flexibilitat  per tal d'emmagatzemar diferents tipus de dades. Més concretament, això es deu a que és capaç d'emmagatzemar diferents dades experimentals a la vegada en el mateix objecte, permetent a la vegada emmagatzemar i gestionar metadades tant per les diferents dades experimentals com per a la informació que es troba a les files i les columnes. Aquest fet diferencia aquest tipus de classe que la d'`ExpressionSet`, la qual funciona de forma similar, però està centrada en poder emmagatzemar dades d'expressions gèniques; aquest fet fa que aquesta classe tingui una estructura més rígida. Per tant, si es volen fer estudis de dades més variades, la millor opció seria emprar `SummarizedExperiment`. Cal recalcar que `SummarizedExperiment` és una extensió d'`ExpressionSet`, i és per això que son tan semblants entre sí. 
 
 - PROCEDIMENT GENERAL D'ANÀLISI
-
-- ETC
 
 # RESULTATS
 
@@ -123,8 +122,6 @@ ggplot(dades_pca, aes(PC1, PC2)) +
 ```
 
 - ANÀLISI EXPLORATÒRIA
-
-Un primer pas 
 
 # DISCUSSIÓ
 
