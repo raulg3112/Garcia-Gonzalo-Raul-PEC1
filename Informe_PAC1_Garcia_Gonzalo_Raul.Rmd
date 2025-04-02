@@ -17,6 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(jsonlite)
 library(metabolomicsWorkbenchR)
 library(SummarizedExperiment)
+library(tidyverse)
+library(POMA)
 library(ggplot2)
 ```
 
@@ -25,8 +27,6 @@ json_data <- fromJSON("data/ST000001_AN000001.json")
 ```
 
 # Descripció de la PAC
-
-4. Elaborar un informe que descrigui el procés que s'ha utilitzat, incloent-hi la justificació de la selecció del dataset, la seva incorporació al `SummarizedExperiment`, l'anàlisi exploratòria de les dades i la interpretació dels resultats des del punt de vista biològic. L'extensió màxima d'aquest informe (sense tenir en compte els Annexos) ha de ser de **10 pàgines**), en format PDF.
 
 5. Crear un respositori GitHub que contingui: 
 
@@ -57,7 +57,7 @@ L'elecció d'aquest estudi respecte altres va ser, a més de què a simple vista
 
 Per poder portar a terme l'assaig, es va crear un `SummarizedExperiment` que conté la informació (dades/metadades) de l'estudi. A partir d'aquest, es va procedir a realitzar l'anàlisi exploratori necessari, per tal de poder entendre els resultats de l'estudi i obtendre conclusions d'aquests.
 
-Les llibreries emprades per poder generar tant l'objecte `SummarizedExperiment` com l'anàlisi exploratori van ser `jsonlite`, `metabolomicsWorkbenchR`,  `SummarizedExperiment` i `ggplot2`, junt amb funcions bàsiques de R que no necessiten de l'instal·lació d'una llibreria per funcionar.
+Les llibreries emprades per poder generar tant l'objecte `SummarizedExperiment` com l'anàlisi exploratori van ser `jsonlite`, `metabolomicsWorkbenchR`,  `SummarizedExperiment`, `tidyverse`, `POMA` i `ggplot2`, junt amb funcions bàsiques de R que no necessiten de l'instal·lació d'una llibreria per funcionar.
 
 `SummarizedExperiment`, a diferència d'altres classes, permet una alta flexibilitat  per tal d'emmagatzemar diferents tipus de dades. Més concretament, això es deu a que és capaç d'emmagatzemar diferents dades experimentals a la vegada en el mateix objecte, permetent a la vegada emmagatzemar i gestionar metadades tant per les diferents dades experimentals com per a la informació que es troba a les files i les columnes. Aquest fet diferencia aquest tipus de classe que la d'`ExpressionSet`, la qual funciona de forma similar, però està centrada en poder emmagatzemar dades d'expressions gèniques; aquest fet fa que aquesta classe tingui una estructura més rígida. Per tant, si es volen fer estudis de dades més variades, la millor opció seria emprar `SummarizedExperiment`. Cal recalcar que `SummarizedExperiment` és una extensió d'`ExpressionSet`, i és per això que son tan semblants entre sí. 
 
@@ -151,53 +151,43 @@ head(rownames(fatBIE))
 
 Per tal de poder fer un estudi més exhaustiu, es va procedir amb l'anàlisi de components principals (PCA), per tal d'intentar observar algun patró en les dades o identificar diferents poblacions en aquestes. Es van generar dos gráfiques diferents, una d'elles pel genotip de la planta i un d'altre pel tractament que se li havia aplicat en aquesta. 
 
+Primer de tot, es va portar a terme una normalització de les dades, per tal de disminuir les diferències de valors entre elles i que totes es trobessin amb una *background* similar. Es va observar amb un parell de diagrames de caixes com un cop feta la normalització les dades es trobaven més equilibrades (es poden trobar a l'Annex).
+
+Amb les dades normalitzades, es genera un gràfic d'*outliers* amb `PomaOutliers()` per tal d'observar la repartició dels diferents grups mitjançant la metadata de factors. Per fer-ho, es va generar un nou grup de metadata que contenia la informació pels dos factors, `Arabidopsis_Genotype` i `Plant_Wounding_Treatment`.
+
 ```{r, echo=FALSE}
-# S'obtenen els valors de PCA amb `prcomp()`. Es genera la transposada de 
-# l'assaig perquè aquesta sigui possible de dur-se a terme. També, s'empra 
-# la condició 'scale. = TRUE', ja que és recomendable utilitzar-la.
-valors_pca <- prcomp(t(assay(fatBIE)), scale. = TRUE)
-
-# Es crea un dataframe per poder visualitzar els resultats del PCA. Aquest
-# inclou el nom de les mostres, els valors de PC1 i els valors de PC2.
-dades_pca <- data.frame(Mostra = colnames(assay(fatBIE)), 
-                        PC1 = valors_pca$x[,1], PC2 = valors_pca$x[,2])
-
-# Amb `ggplot()` es genera el gràfic PCA. S'agrupen els valors per cadascun
-# dels factors de 'Arabidopsis_Genotype'.
-ggplot(dades_pca, aes(PC1, PC2)) + 
-  geom_point(aes(color = fatBIE$Arabidopsis_Genotype), size = 2) +
-  labs(title = "PCA de fatBIE", x = "PC1", y = "PC2", 
-       color = "Genotip d'Arabidopsis:") + theme_classic()
+# Apliquen la normalització de les dades.
+norm_fatBIE <- fatBIE %>% PomaNorm(method = "log_pareto")
+colData(norm_fatBIE)$Factors <- paste(norm_fatBIE$Arabidopsis_Genotype, 
+                              norm_fatBIE$Plant_Wounding_Treatment, sep = "/")
+# S'utilitza 'PomaOutliers()' per generar el gràfic. Com a condició 'outcome' 
+# se li marca al programa que la metadata amb la informació de factors és la 
+# generada anteriorment, 'Factors'.
+PomaOutliers(norm_fatBIE, outcome = "Factors")$polygon_plot
 ```
 
-De l'agrupació per genotip es va obtenir el resultat que, de forma majoritària (tot i que amb alguns casos desplaçats), es podia donar una separació entre els dos genotips. Amb altres paraules, aquest gràfic va sugerir que la mutació en el gen FatB afectava significativament al perfil metabolòmic que presentaven les plantes com a resposta a ferides. 
+Es va observar com els grups de plantes que no havien sigut tractades amb ferides representaven una representació molt similar. EL grup de plantes sense mutació però que havien sigut sotmeses a ferides es trobaven lleugerament desplaçaces cap a l'esquerra de l'eix X i més cap a munt de l'eix Y. Per últim, les plantes que tenien la mutació i havien estat sotmeses a ferides demostraven estar representades més cap amunt i molt més cap a la dreta dels demés grups. Per tant, aquests resultats van sugerir que la presència de la mutació representava un canvi als nivells metabolòmics de la planta com a resposta a un estrés com seria una ferida.
+
+A partir d'aquest gràfic es van obtenir les dades, les quals es van guardar com a dades processades.Amb aquestes dades, es va procedir a fer un gràfic de les PCA. Aquest es va fer amb `prcomp()` sobre la transposada de les dades processades. D'aquest, es van obtenir les dades per un parell de les PCAs i es van graficar emprant la funció `ggplot()`.
 
 ```{r, echo=FALSE}
-# Es realitza el mateix gràfic que abans però ara agrupant els valors per cada
-# un dels factors de 'Plant_Wounding_Treatment'.
-ggplot(dades_pca, aes(PC1, PC2)) + 
-  geom_point(aes(color = fatBIE$Plant_Wounding_Treatment), size = 2) +
-  labs(title = "PCA de fatBIE", x = "PC1", y = "PC2", 
-       color = "Tractament de la planta:") + theme_classic()
-```
+# Amb la mateixa fòrmula que abans `PomaOutliers`, es generen les dades 
+# utilitzades en el gràfic i s'emmagatzemen com a un nou objecte.
+fatBIE_processat <- PomaOutliers(norm_fatBIE, outcome = "Factors")$data
 
-A l'agrupar per les plantes amb ferides o les control, es va observar una notable separació entre els grups, sugerint també que el tractament afectava significativament als valors dels metabolits com a resposta a ferides. 
+# Es generen els valors de PCA amb la funció `prcomp()` i la transposada de les
+# dades processades.
+valors_pca <- prcomp(t(assay(fatBIE_processat)), center = TRUE, scale. = TRUE)
 
-Arribat a aquestes suposicions, es va decidir generar un últim gràfic juntant ambdós clasifcadors, `Arabidopsis_Genotype` i `Plant_Wounding_Treatment`.
+# En un dataframe, s'emmagatzemen les dades de les mostres, els valors de PCA
+# que s'empraran al gràfic i els factors que agruparan les poblacions de les 
+# mostres.
+dades_pca <- data.frame(Mostra = colnames(assay(norm_fatBIE)), 
+                  PC1 = valors_pca$x[,1], PC2 = valors_pca$x[,2],
+                  Factors = paste(norm_fatBIE$Arabidopsis_Genotype, 
+                              norm_fatBIE$Plant_Wounding_Treatment,sep = " / "))
 
-```{r, echo=FALSE}
-
-# Es genera de nou el dataframe anterior, només que ara s'hi iclou la
-# informació de cada un dels factors 'Arabidopsis_Genotype' i 'Plant_Wounding_
-# Treatment' en un mateix grup.
-dades_pca <- data.frame(Mostra = colnames(assay(fatBIE)), 
-                      PC1 = valors_pca$x[,1], PC2 = valors_pca$x[,2],
-                      Factors = paste(fatBIE$Arabidopsis_Genotype, 
-                                  fatBIE$Plant_Wounding_Treatment,sep = " / "))
-
-# Es torna a generar el gràfic amb `ggplot()`. Aquest cop, s'empren els dos
-# nous valors del dataframe per generar, amb `interaction()`, les 4 poblacions
-# diferents de l'estudi i poder observar les diferents agrupacions d'aquestes.
+# Amb l'ús de la funció `ggplot()`, es grafiquen els valors de PCA anteriors. 
 ggplot(dades_pca, aes(PC1, PC2)) + geom_point(aes(color = Factors), size = 2) +
   labs(title = "PCA de fatBIE", x = "PC1", y = "PC2", 
        color = "Genotip / Tractament:") + theme_classic()
@@ -205,14 +195,19 @@ ggplot(dades_pca, aes(PC1, PC2)) + geom_point(aes(color = Factors), size = 2) +
 
 Amb aquest últim gràfic, es va arribar a la conclusió de que es podien diferenciar 3 grups diferents: primer de tot, un que consistia en les plantes que tenien o no la mutació, però que no havien estat sotmeses a una ferida. Per altra banda, es va concloure que la mutació afecta a la resposta de les plantes a ferides a nivell metabolòmic degut que els dos grups s'observaven completament distanciats en el gràfic de PCA. 
 
-Per tant, de l'anàlisi de components principals es va concloure que el fet que una planta tingués la mutació no afectava de forma directa als nivells de metabolits en una planta que no tingués cap ferida, però quan aquesta sí que tenia una ferida es donava una resposta diferent tant de les plantes que no tenien ferides com de les que sí però que no tenien la mutació en el seu genoma. 
-
+Per tant, de l'anàlisi exploratori es va concloure que el fet que el fet de què una planta tingués la mutació no afectava de forma directa als nivells de metabolits quan aquesta planta que no tenia cap ferida, però quan aquesta sí que la tenia es donava una resposta diferent tant de les plantes que no tenien ferides com de les que sí que tenien la mutació al seu genoma. Aquesta diferència, a la vegada, es va veure que era molt més significativa en el grup de plantes que tenien la mutació. Aquests resultats es poden confirmar fent-li una ullada als resultats del annexos, on s'han disposat els diferents nivells de cada metabolit per cadascuna de les agrupacions.
 
 # DISCUSSIÓ
 
-- REFLEXIÓ DE LES LIMITACIONS DE L'ESTUDI
+En resum, es van poder observar tres nivells metabolòmics diferents. Per una banda es va veure que tant les plantes sense mtuació com les que la tenien si no havien sigut tratades amb una ferida i, per tant, no tenien aquest estrés al que havien de respondre, expressaven uns nivells de metabolits similars entre elles. Per altra banda, si a una planta sense la mutació al gen FatB se li feia una ferida, aquests nivells es veien alterats; el mateix va passar amb les plantes que tenien la mutació i rebien una ferida. 
+
+Les principals limitacions que se li podrien trobar en aquest estudi i aquestes dades podria ser la quantitat d'aquests, ja que 24 mostres per casi cada grup (excepte un cas on n'hi ha 30) es podrien considerar poques com per extreure unes conclusions clares, sobretot siguent un factor que pot variar tant entre individus per diferents factors tant interns com externs. 
+
+Pel que fa a la creació de l'objecte `SummarizedExperiment`, es podrien veure certes limitacions a com està creat. Primerament, està el fet que la funció `do_query()` no implementa correctament tota la metadata que es pot trobar a la pàgina web de l'estudi, pel que si es vol introduir també aquesta en l'objecte és necessari fer-ho manualment. Aquest fet també comporta a que es necessiti d'una altra font d'informació (com seria JSON) per poder-ho dur a terme. Pel que fa a l'anàlisi exploratòria, es podria haver fet una anàlisi més exhaustiva i amb alguna informació més primordial, però amb l'anàlisi portada a terme sembla suficient com per poder observar quins resultats es poden obtenir de l'estudi.
 
 # CONCLUSIONS
+
+* Amb `do_query()` no s'aconsegueix extreure tota la metadata de l'estudi.
 
 * En situacions normals, les plantes amb mutacions no demostren diferències amb els controls. 
 
@@ -234,4 +229,53 @@ Per tant, de l'anàlisi de components principals es va concloure que el fet que 
 
 - *`ExpressionSet` and `SummarizedExperiment`*. https://www.sthda.com/english/wiki/expressionset-and-summarizedexperiment#licence.
 
+- *Get Started*. Pol Castellano-Escuder, Ph.D. https://bioconductor.org/packages/release/bioc/vignettes/POMA/inst/doc/POMA-workflow.html
+
 - Análisis de Componentes Principales (PCA). https://rpubs.com/cristina_gil/pca.
+
+# ANNEXOS
+
+## Annex 1. Diagrames de caixes de `fatBIE` i `norm_fatBIE`.
+
+*Boxplot* de `fatBIE`:
+
+```{r, echo=FALSE}
+PomaBoxplots(fatBIE, x = "samples")
+```
+
+*Boxplot* de `norm_fatBIE`:
+
+```{r, echo=FALSE}
+PomaBoxplots(norm_fatBIE, x = "samples")
+```
+
+## Annex 2. Resum estadístic dels valors de PCA.
+
+```{r, echo=FALSE}
+summary(valors_pca)
+```
+
+
+## Annex 3. Nivells de metabolits de plantes sense la mutació i no tractades amb ferides. 
+
+```{r, echo=FALSE}
+assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[1] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[2]])
+```
+
+## Annex 4. Nivells de metabolits de plantes amb la mutació i no tractades amb ferides. 
+
+```{r, echo=FALSE}
+assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[1] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[1]])
+```
+
+## Annex 5. Nivells de metabolits de plantes sense la mutació i que van ser tractades amb ferides. 
+
+```{r, echo=FALSE}
+assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[2] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[2]])
+```
+
+## Annex 6. Nivells dels metabolits de plantes amb la mutació i que van ser tractades amb ferides.
+
+```{r, echo=FALSE}
+assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[2] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[1]])
+```
