@@ -192,3 +192,42 @@ assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Tre
 # Dades dels nivells metabolòmics de les plantes amb mutació i tene ferides.
 assay(fatBIE[fatBIE$Plant_Wounding_Treatment == levels(fatBIE$Plant_Wounding_Treatment)[2] & fatBIE$Arabidopsis_Genotype == levels(fatBIE$Arabidopsis_Genotype)[1]])
 ```
+
+```{r}
+# Generació del fitxer 'metadata_fatBIE.md'. Aquest codi no es troba dintre de l'informe, però es considera necessari si es vol fer algun adjustament o algun canvi a la metadata que conté l'arxiu, per tal de poder-lo actualitzar i que no contengui informació errònia.
+
+# Metadades de l'estudi.
+metadata_fatBIE <- c(
+  "# Metadades de l'objecte `SummarizedExperiment`",
+  "",
+  "Aquest document conté informació sobre les metadades associades a l'objecte `SummarizedExperiment` utilitzat en l'anàlisi de dades òmiques.",
+  "",
+  "## 1. Metadades generals de l'estudi",
+  "",
+  "Informació general trobada a `metadata(fatBIE)`:",
+  "",
+  paste(capture.output(metadata(fatBIE)), collapse = "\n"),
+  "Com es pot veure, conté informació adicional sobre el projecte al que pertany l'estudi junt amb informació d'aquest. També, informació de com s'han obtingut les mostres i d'on provenen ('Collection'), del tractament dut a terme ('Treatment') i la preparació de mostres ('SamplePrep').Es pot veure informació sobre la cromatografia feta a servir, l'anàlisi en qüestió i informació extra sobre aquest ('MS').",
+  "",
+  "",
+  "## 2. Metadades de les mostres (columnes)",
+  "",
+   "Les mostres tenen la següent informació, trobada a `colData(fatBIE)`:",
+  "",
+  paste("-", colnames(colData(fatBIE)), collapse = "\n"),
+  "",
+  "Es pot trobar l'identificador de la mostra dintre de l'estudi i també l'identificador de l'estudi (que coincideix en tots els casos). Seguidament, s'hi troba la font de la mostra ('sample_source'), que com en tots els casos és d'una planta conté el mateix valor. 'mb_sample_id' indica l'identificador de cada mostra dintre de la basa de dades 'metabolomicsWorkbench'. 'raw_data' es troba buït degut a que les dades han sigut processades prèviament. Per finalizar, es troben dos variables de factors, una per les mutacions ('Arabidopsis_Genotype') i una d'altre pel tractament ('Plant_Wounding_Treatment').",
+  "",
+  "",
+  "## 3. Metadades dels metabolits",
+  "",
+  "Els metabolits contenen la següent informació, trobada a `rowData(fatBIE)`:",
+  "",
+  paste("-", colnames(rowData(fatBIE)), collapse = "\n"),
+  "",
+  "Conté un total de tres variables amb informació sobre els metabolits. Primer de tot, el nom d'aquests (que és la sortida que s'obté a les files a l'observar les dades de l'assaid). Seguidament, es troba l'identificador dels metabolits, el qual és únic de cadascun d'aquests. Per últim, 'refmet_name' indica el nom que identifica a cada metabolit en RefMet, un llistat de referència de metabolits."
+)
+
+writeLines(metadata_fatBIE, "metadata_fatBIE.md")
+```
+
